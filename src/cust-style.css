@@ -1,0 +1,144 @@
+/* Button Styles */
+button {
+  background-color: #4c9eaf; /* Green background */
+  color: white; /* White text */
+  border: none; /* No border */
+  padding: 10px 15px; /* Some padding */
+  text-align: center; /* Centered text */
+  text-decoration: none; /* No underline */
+  display: inline-block; /* Inline-block for proper spacing */
+  font-size: 16px; /* Increase font size */
+  margin: 4px 2px; /* Margin for spacing */
+  cursor: pointer; /* Pointer cursor on hover */
+  border-radius: 5px; /* Rounded corners */
+  transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
+}
+
+button:hover {
+  background-color: #4c9eaf; /* Darker green on hover */
+  transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px; /* Add some space above the table */
+  border: 1px solid #ddd;
+}
+thead th{
+  text-align: center;
+}
+
+th, td {
+  border: 1px solid #ddd; /* Light gray border */
+  padding: 12px; /* Increased padding */
+  text-align: left; /* Left align text */
+}
+
+th {
+  background-color: #f2f2f2; /* Light gray background for header */
+  color: #333; /* Darker text color */
+  font-weight: bold; /* Bold text */
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9; /* Zebra striping for even rows */
+}
+
+tr:hover {
+  background-color: #f1f1f1; /* Highlight row on hover */
+}
+
+tfoot {
+  background-color: #f2f2f2; /* Light gray background for footer */
+  font-weight: bold; /* Bold text for footer */
+}
+
+tfoot td{
+  border:none;
+}
+
+.data-container {
+  position: relative;
+  /* Position relative to contain the overlay */
+  width: 100%;
+  height: auto;
+  border: 1px solid #ccc;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  /* Semi-transparent background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  /* Ensure it appears above the content */
+  visibility: visible;
+  /* Show when active */
+  opacity: 1;
+  /* Make it opaque */
+  transition: visibility 0s, opacity 0.5s linear;
+  /* Smooth transition */
+}
+
+
+
+.loader {
+  display: grid;
+  grid-template-columns: repeat(3, 20px);
+  grid-gap: 5px;
+  justify-content: center;
+  align-items: center;
+ 
+}
+
+.loader div {
+  width: 20px;
+  height: 20px;
+  background-color: #3498db;
+  border-radius: 50%;
+  animation: grid 1.2s infinite ease-in-out;
+}
+
+.loader div:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loader div:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+
+
+@keyframes grid {
+  0%, 100% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1);
+  }
+}
+
+
+
+
+.flatpickr-calendar * {
+  color:#70541E !important
+}
+
+.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+  background: rgba(180,151,89,.9)!important;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  color: #fff;
+  border-color: rgba(180,151,89,.9)!important;
+}

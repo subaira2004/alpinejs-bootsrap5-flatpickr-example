@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <script defer src="./src/main.js" type="module"></script>
+    <link rel="stylesheet" href="./src/cust-style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment/locale/ar.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" x-data="searchComponent()">
+                    <div class="card-header">
+                        <h4>Search</h4>
+                    </div>
+                    <div class="card-body">
+                        <input type="text" x-model="searchQuery" placeholder="Search..." />
+                        <div x-data="dateRangePicker()" class="card p-4 shadow-sm">
+                            <label for="dateRangeInput" class="form-label fw-bold">Select Date Range</label>
+                            <input type="text" id="dateRangeInput" class="form-control" placeholder="Select date range"
+                                x-bind:value="formattedDateRange" readonly @click="openPicker">
+
+                            <div class="mt-3">
+                                <strong>From:</strong> <span x-text="fromDate || 'Not selected'"></span> <br>
+                                <strong>To:</strong> <span x-text="toDate || 'Not selected'"></span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <strong>From:</strong> <span x-text="fromSelectedDate || 'Not selected'"></span> <br>
+                            <strong>To:</strong> <span x-text="toSelectedDate || 'Not selected'"></span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-success" @click="doSearch">Search</button>
+                        <button class="btn btn-danger" @click="resetSearch">Reset</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 mt-2">
+                <div class="data-container" x-data="listData()" x-show="showMe">
+                    <div class="loading-overlay loader" x-show="loading">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Title</th>
+                                <th>Year</th>
+                                <th>Artist</th>
+                                <th>Origin</th>
+                            </tr>
+                        </thead>
+                        <tbody x-show="initComplete">
+                            <template x-if="!hasData">
+                                <tr>
+                                    <td colspan="5">No data found</td>
+                                </tr>
+                            </template>
+                            <template x-for="item in resData" :key="item.id">
+                                <tr>
+                                    <td x-text="item.id"></td>
+                                    <td x-text="item.title"></td>
+                                    <td x-text="item.date_display"></td>
+                                    <td x-text="item.artist_display"></td>
+                                    <td x-text="item.place_of_origin"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                        <tfoot x-show="initComplete && hasData && pagination">
+                            <tr>
+                                <td><button class="btn btn-primary" @click="prevPage">prev</button></td>
+                                <td colspan="3">&emsp;&emsp;&emsp;&emsp;Total: <span x-text="pagination.total"></span>
+                                    <span
+                                        x-html="()=>{return '&emsp;&emsp;&emsp;&emsp;showing page : '+ pagination.current_page + ' of  ' +pagination.total_pages}"></span>
+                                </td>
+                                <td><button class="btn btn-primary" @click="nextPage">Next</button></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // document.addEventListener('alpine:init', () => {
+        // })
+        // Alpine.data('listData',
+        //);
+
+        searchComponent = () => {
+            return {
+                searchQuery: '',
+                fromSelectedDate: null,
+                toSelectedDate: null,
+                async doSearch() {
+                    // Dispatch a custom event to notify the table component
+                    this.$dispatch('do-search', { query: this.searchQuery });
+                },
+                async resetSearch() {
+                    // Dispatch a custom event to notify the table component
+                    this.$dispatch('reset-search', { query: this.searchQuery });
+                },
+                async setSelectedDateRange(query) {
+                    this.fromSelectedDate = query[0];
+                    this.toSelectedDate = query[1];
+                },
+                async init() {
+                    window.addEventListener('date-range-selected', (event) => {
+                        this.setSelectedDateRange(event.detail.query);
+                    });
+                }
+            };
+        }
+
+        const listData = () => ({
+            async init() {
+                window.addEventListener('do-search', (event) => {
+                    this.initSearch(event.detail.query);
+                });
+                window.addEventListener('reset-search', (event) => {
+                    this.resetSearch(event.detail.query);
+                });
+
+            },
+            async nextPage() {
+                if (this.pagination?.current_page === this.pagination?.total_pages) {
+                    return;
+                }
+
+                let tgtPageIdx = (this.pagination?.current_page + 1) - 1;
+                if (this.pageData[tgtPageIdx]) {
+                    this.resData = this.pageData[tgtPageIdx].data;
+                    this.pagination = this.pageData[tgtPageIdx].pagination;
+                    return;
+                }
+                this.loading = true;
+                const response = await fetch(this.pagination.next_url);
+                const _data = await response.json();
+                this.loading = false;
+                this.resData = _data?.data || [];
+                this.pagination = _data?.pagination || {};
+                this.pageData.push(_data);
+            },
+            async prevPage() {
+                if (this.pagination?.current_page === 1) {
+                    return;
+                }
+                let tgtPageIdx = (this.pagination?.current_page - 1) - 1;
+                if (this.pageData[tgtPageIdx]) {
+                    this.resData = this.pageData[tgtPageIdx].data;
+                    this.pagination = this.pageData[tgtPageIdx].pagination;
+                    return;
+                }
+
+                this.loading = true;
+                const response = await fetch(this.pagination.prev_url);
+                const _data = await response.json();
+                this.loading = false;
+                this.resData = _data?.data || [];
+                this.pagination = _data?.pagination || {};
+                this.pageData.push(_data);
+            },
+            async initSearch() {
+                this.showMe = true
+                this.loading = true;
+                this.pageData = [];
+                const response = await fetch('https://api.artic.edu/api/v1/artworks');
+                const _data = await response.json();
+                this.loading = false;
+                this.resData = _data?.data || [];
+                this.initComplete = true;
+                this.pagination = _data?.pagination || {};
+                this.hasData = _data?.data.length > 0;
+                this.pageData.push(_data);
+            },
+            async resetSearch() {
+                this.initComplete = false;
+                this.resData = [];
+                this.loading = true;
+                this.hasData = false;
+                this.pagination = {};
+                this.pageData = [];
+                this.showMe = false;
+            },
+            initComplete: false,
+            resData: [],
+            loading: true,
+            hasData: false,
+            pagination: {},
+            pageData: [],
+            showMe: false
+        })
+
+
+        moment.locale('ar'); // Set Moment.js to Arabic
+
+        function dateRangePicker() {
+            return {
+                fromDate: null,
+                toDate: null,
+                formattedDateRange: '',
+                pickerInstance: null,
+
+                dateSelected(selectedDates) {
+                    this.fromDate = selectedDates ? (selectedDates.length > 0 ? moment(selectedDates[0]).format("LL") : null) : null; // Arabic Date Format
+                    this.toDate = selectedDates ? (selectedDates.length > 1 ? moment(selectedDates[1]).format("LL") : null) : null;
+                    this.formattedDateRange = `${self.fromDate} - ${self.toDate}`;
+                    this.$dispatch('date-range-selected', {
+                        query: [this.fromDate, this.toDate]
+                    });
+                },
+
+                openPicker() {
+                    let self = this;
+
+                    if (!self.pickerInstance) {
+                        self.pickerInstance = flatpickr("#dateRangeInput", {
+                            mode: "range",
+                            dateFormat: "d-m-Y",
+                            locale: "ar", // Enable Arabic for Flatpickr
+                            minDate: "01-01-2024",  // Example restriction
+                            maxDate: "31-12-2025",
+                            onChange: function (selectedDates) {
+                                self.dateSelected([]);
+                                if (selectedDates.length === 2) {
+                                    self.dateSelected(selectedDates);
+                                }
+                            }
+                        });
+                    }
+
+                    self.pickerInstance.open();
+                }
+            };
+        }
+
+    </script>
+</body>
+
+</html>
